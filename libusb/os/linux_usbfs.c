@@ -229,9 +229,9 @@ static int _get_usbfs_fd(struct libusb_device *dev, mode_t mode, int silent)
 		return fd; /* Success */
 
 	if (errno == ENOENT) {
-		if (!silent) 
+		if (!silent)
 			usbi_err(ctx, "File doesn't exist, wait %d ms and try again", delay/1000);
-   
+
 		/* Wait 10ms for USB device path creation.*/
 		nanosleep(&(struct timespec){delay / 1000000, (delay * 1000) % 1000000000UL}, NULL);
 
@@ -239,7 +239,7 @@ static int _get_usbfs_fd(struct libusb_device *dev, mode_t mode, int silent)
 		if (fd != -1)
 			return fd; /* Success */
 	}
-	
+
 	if (!silent) {
 		usbi_err(ctx, "libusb couldn't open USB device %s: %s",
 			 path, strerror(errno));
@@ -501,6 +501,8 @@ static int op_init(struct libusb_context *ctx)
 
 	usbi_mutex_static_lock(&linux_hotplug_startstop_lock);
 	r = LIBUSB_SUCCESS;
+#if !defined(__ANDROID__)
+    // android should not start monitor and scan devices will failed if selinux on.
 	if (init_count == 0) {
 		/* start up hotplug event handler */
 		r = linux_start_event_monitor();
@@ -513,6 +515,7 @@ static int op_init(struct libusb_context *ctx)
 			linux_stop_event_monitor();
 	} else
 		usbi_err(ctx, "error starting hotplug event monitor");
+#endif
 	usbi_mutex_static_unlock(&linux_hotplug_startstop_lock);
 
 	return r;
@@ -522,11 +525,13 @@ static void op_exit(struct libusb_context *ctx)
 {
 	UNUSED(ctx);
 	usbi_mutex_static_lock(&linux_hotplug_startstop_lock);
+#if !defined(__ANDROID__)
 	assert(init_count != 0);
 	if (!--init_count) {
 		/* tear down event handler */
 		(void)linux_stop_event_monitor();
 	}
+#endif
 	usbi_mutex_static_unlock(&linux_hotplug_startstop_lock);
 }
 
@@ -534,10 +539,8 @@ static int linux_start_event_monitor(void)
 {
 #if defined(USE_UDEV)
 	return linux_udev_start_event_monitor();
-#elif !defined(__ANDROID__)
-	return linux_netlink_start_event_monitor();
 #else
-	return LIBUSB_SUCCESS;
+	return linux_netlink_start_event_monitor();
 #endif
 }
 
@@ -545,10 +548,8 @@ static int linux_stop_event_monitor(void)
 {
 #if defined(USE_UDEV)
 	return linux_udev_stop_event_monitor();
-#elif !defined(__ANDROID__)
-	return linux_netlink_stop_event_monitor();
 #else
-	return LIBUSB_SUCCESS;
+	return linux_netlink_stop_event_monitor();
 #endif
 }
 
