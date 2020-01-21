@@ -971,7 +971,7 @@ int API_EXPORTED libusb_get_port_path(libusb_context *ctx, libusb_device *dev,
  * function and make sure that you only access the parent before issuing
  * \ref libusb_free_device_list(). The reason is that libusb currently does
  * not maintain a permanent list of device instances, and therefore can
- * only guarantee that parents are fully instantiated within a 
+ * only guarantee that parents are fully instantiated within a
  * libusb_get_device_list() - libusb_free_device_list() block.
  */
 DEFAULT_VISIBILITY
@@ -1302,6 +1302,14 @@ int API_EXPORTED libusb_wrap_sys_device(libusb_context *ctx, intptr_t sys_dev,
 	*dev_handle = _dev_handle;
 
 	return 0;
+}
+int LIBUSB_CALL libusb_wrap_sys_device2(libusb_context *ctx, intptr_t sys_dev, libusb_device_handle **dev_handle, libusb_device **dev)
+{
+    int ret = libusb_wrap_sys_device(ctx, sys_dev, dev_handle);
+    if (ret == LIBUSB_SUCCESS) {
+        *dev = (*dev_handle)->dev;
+    }
+    return ret;
 }
 
 /** \ingroup libusb_dev
@@ -1700,6 +1708,7 @@ int API_EXPORTED libusb_claim_interface(libusb_device_handle *dev_handle,
 	if (dev_handle->claimed_interfaces & (1U << interface_number))
 		goto out;
 
+	usbi_dbg("claiming interface %p %d", dev_handle, interface_number);
 	r = usbi_backend.claim_interface(dev_handle, interface_number);
 	if (r == 0)
 		dev_handle->claimed_interfaces |= 1U << interface_number;
