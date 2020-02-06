@@ -2493,6 +2493,18 @@ int API_EXPORTED libusb_handle_events_completed(libusb_context *ctx,
 	return libusb_handle_events_timeout_completed(ctx, &tv, completed);
 }
 
+int API_EXPORTED libusb_handle_readp_completed(struct libusb_device_handle *devh,
+	int *completed)
+{
+	int r = 0;
+#ifdef __ANDROID__
+    r = usbi_backend.handle_readp(devh, r);
+	if (r)
+		usbi_err(devh->dev->ctx, "backend handle_readp failed with error %d", r);
+#endif
+    return r;
+}
+
 /** \ingroup libusb_poll
  * Handle any pending events by polling file descriptors, without checking if
  * any other threads are already doing so. Must be called with the event lock

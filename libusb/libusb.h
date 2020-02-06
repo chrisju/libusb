@@ -1840,6 +1840,7 @@ int LIBUSB_CALL libusb_handle_events_timeout_completed(libusb_context *ctx,
 	struct timeval *tv, int *completed);
 int LIBUSB_CALL libusb_handle_events(libusb_context *ctx);
 int LIBUSB_CALL libusb_handle_events_completed(libusb_context *ctx, int *completed);
+int LIBUSB_CALL libusb_handle_readp_completed(struct libusb_device_handle *devh, int *completed);
 int LIBUSB_CALL libusb_handle_events_locked(libusb_context *ctx,
 	struct timeval *tv);
 int LIBUSB_CALL libusb_pollfds_handle_timeouts(libusb_context *ctx);

@@ -2764,6 +2764,18 @@ static int reap_for_handle(struct libusb_device_handle *handle)
 	}
 }
 
+static int op_handle_readp(struct libusb_device_handle *devh, int num_ready)
+{
+	int r;
+	usbi_mutex_lock(&devh->dev->ctx->open_devs_lock);
+    do {
+        r = reap_for_handle(devh);
+    } while (r == 0);
+	usbi_mutex_unlock(&devh->dev->ctx->open_devs_lock);
+    if (r >= 0) return 0;
+    return r;
+}
+
 static int op_handle_events(struct libusb_context *ctx,
 	struct pollfd *fds, POLL_NFDS_TYPE nfds, int num_ready)
 {
@@ -2893,6 +2905,7 @@ const struct usbi_os_backend usbi_backend = {
 	.clear_transfer_priv = op_clear_transfer_priv,
 
 	.handle_events = op_handle_events,
+	.handle_readp = op_handle_readp,
 
 	.clock_gettime = op_clock_gettime,
 

@@ -1136,6 +1136,8 @@ struct usbi_os_backend {
 	int (*handle_events)(struct libusb_context *ctx,
 		struct pollfd *fds, POLL_NFDS_TYPE nfds, int num_ready);
 
+	int (*handle_readp)(struct libusb_device_handle *devh, int num_ready);
+
 	/* Handle transfer completion. Optional.
 	 *
 	 * Provide this function when there are no file descriptors available
