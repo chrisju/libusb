@@ -311,6 +311,7 @@ static const char *find_usbfs_path(void)
 	const char *path = "/dev/bus/usb";
 	const char *ret = NULL;
 
+    // maybe produce selinux warning in Android
 	if (check_usb_vfs(path)) {
 		ret = path;
 	} else {
@@ -1552,7 +1553,9 @@ static int op_set_configuration(struct libusb_device_handle *handle, int config)
 static int claim_interface(struct libusb_device_handle *handle, int iface)
 {
 	int fd = _device_handle_priv(handle)->fd;
+    usbi_dbg("ioctl %d", fd);
 	int r = ioctl(fd, IOCTL_USBFS_CLAIMINTF, &iface);
+    usbi_dbg("ioctl %d end", fd);
 	if (r) {
 		if (errno == ENOENT)
 			return LIBUSB_ERROR_NOT_FOUND;
