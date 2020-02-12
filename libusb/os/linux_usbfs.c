@@ -502,8 +502,8 @@ static int op_init(struct libusb_context *ctx)
 
 	usbi_mutex_static_lock(&linux_hotplug_startstop_lock);
 	r = LIBUSB_SUCCESS;
+    // android with selinux should not start monitor and scan devices will failed if selinux on.
 #if !defined(__ANDROID__)
-    // android should not start monitor and scan devices will failed if selinux on.
 	if (init_count == 0) {
 		/* start up hotplug event handler */
 		r = linux_start_event_monitor();
@@ -526,6 +526,7 @@ static void op_exit(struct libusb_context *ctx)
 {
 	UNUSED(ctx);
 	usbi_mutex_static_lock(&linux_hotplug_startstop_lock);
+    // android with selinux init_count is 0 and no need to stop monitor
 #if !defined(__ANDROID__)
 	assert(init_count != 0);
 	if (!--init_count) {
@@ -1553,9 +1554,7 @@ static int op_set_configuration(struct libusb_device_handle *handle, int config)
 static int claim_interface(struct libusb_device_handle *handle, int iface)
 {
 	int fd = _device_handle_priv(handle)->fd;
-    usbi_dbg("ioctl %d", fd);
 	int r = ioctl(fd, IOCTL_USBFS_CLAIMINTF, &iface);
-    usbi_dbg("ioctl %d end", fd);
 	if (r) {
 		if (errno == ENOENT)
 			return LIBUSB_ERROR_NOT_FOUND;
@@ -2764,6 +2763,7 @@ static int reap_for_handle(struct libusb_device_handle *handle)
 	}
 }
 
+// clean reap_for_handle without handle_events
 static int op_handle_readp(struct libusb_device_handle *devh, int num_ready)
 {
 	int r;

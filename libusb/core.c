@@ -1303,6 +1303,8 @@ int API_EXPORTED libusb_wrap_sys_device(libusb_context *ctx, intptr_t sys_dev,
 
 	return 0;
 }
+
+// this will return a libusb_device
 int LIBUSB_CALL libusb_wrap_sys_device2(libusb_context *ctx, intptr_t sys_dev, libusb_device_handle **dev_handle, libusb_device **dev)
 {
     int ret = libusb_wrap_sys_device(ctx, sys_dev, dev_handle);

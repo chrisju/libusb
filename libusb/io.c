@@ -2497,6 +2497,7 @@ int API_EXPORTED libusb_handle_readp_completed(struct libusb_device_handle *devh
 	int *completed)
 {
 	int r = 0;
+    // add macro __ANDROID__ or compile will failed in other platform
 #ifdef __ANDROID__
     r = usbi_backend.handle_readp(devh, r);
 	if (r)
